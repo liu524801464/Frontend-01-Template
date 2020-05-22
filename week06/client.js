@@ -238,5 +238,6 @@ void async function () {
 
     let responst = await req.send();
     console.log(responst)
-    parser.parserHTML(responst.body)
+  let dom =  parser.parserHTML(responst.body)
+  console.log(JSON.stringify(dom,null,"   "))
 }()

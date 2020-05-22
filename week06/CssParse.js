@@ -1,4 +1,4 @@
-const Css = require('css')
+﻿const Css = require('css')
 let rules = [];
 module.exports.addCSSRules = function (text) {
     var ast = Css.parse(text)
@@ -9,6 +9,7 @@ module.exports.addCSSRules = function (text) {
 
 module.exports.computeCss = function (element) {
     if (rules.length === 0) { return; }
+    element.computeStyle={};
     for (let rule of rules) {
         let isMatch = false;
         let selectors = rule.selectors[0].split(' ').reverse();
@@ -29,9 +30,22 @@ module.exports.computeCss = function (element) {
             isMatch = true;
         }
         if (isMatch) {
-            console.log('//333/////')
-            console.log(rule)
-            computeStyle(rule, element);
+            let sp = specifity(rule.selectors[0]);
+            let computeStyle = element.computeStyle;
+            for(let declaration of rule.declarations){
+                if(!computeStyle[declaration.property]){
+                    computeStyle[declaration.property]={}
+                }
+                if(! computeStyle[declaration.property].specificity)
+                {
+                    computeStyle[declaration.property].value = declaration.value;
+                    computeStyle[declaration.property].specificity=sp
+                }else if(compare( sp,computeStyle[declaration.property].specificity)>0){
+                    computeStyle[declaration.property].value = declaration.value;
+                    computeStyle[declaration.property].specificity=sp
+                }
+
+            }
         }
     }
 }
@@ -55,19 +69,30 @@ function macth(selector, element) {
     }
     return false;
 }
-/**
- * 根据匹配到的rule计算css
- * @param {规则} rule 
- * @param {元素} element 
- */
-function computeStyle(rule, element) {
-    for (let declaration of rule.declarations) {
-        if (element.computeStyle) {
-            element.computeStyle[declaration.property] = declaration.value;
+
+
+function specifity(selector) {
+    let p = [0, 0, 0, 0];
+    let selectors = selector.split(' ').reverse();
+    for (let o of selectors) {
+        if (o.charAt(0) === '#') {
+            p[1] += 1
+        } else if (o.charAt(0) === '.') {
+            p[2] += 1
         } else {
-            element.computeStyle = {};
-            element.computeStyle[declaration.property] = declaration.value;
+            p[3] += 1;
         }
     }
+    return p;
 }
 
+function compare(sp1, sp2) {
+    if (sp1[0] - sp2[0]) {
+        return sp1[0] - sp2[0];
+    } else if (sp1[1] - sp2[1]) {
+        return sp1[1] - sp2[1]
+    } else if (sp1[2] - sp2[2]) {
+        return sp1[2] - sp2[2];
+    }
+    return sp1[3] - sp2[3];
+}

@@ -1,4 +1,4 @@
-const css = require('./CssParse.js')
+﻿const css = require('./CssParser.js')
 const EOF = Symbol('EOF')  // END OF FILE
 let currentToken = null
 let currentAttr = null
@@ -17,16 +17,16 @@ function emit(token) {
             attributes: [],
             children: []
         }
+        element.tagName = token.tagName
         for (let o in token) {
             if (o != 'type' && o != 'tagName') {
                 element.attributes.push({ name: o, value: token[o] })
             }
         }
-        element.tagName = token.tagName
-        
-        element.parent = top;
+        element.parent = { tagName: top.tagName, attributes: top.attributes,parent:top.parent };
         css.computeCss(element)
         top.children.push(element);
+
         if (!token.isSelfClosing) {
             domTree.push(element)
         }
@@ -36,7 +36,7 @@ function emit(token) {
         if (top.tagName != token.tagName) {
             throw new Error('Tag start are error');
         } else {
-            if(top.tagName === 'style'){
+            if (top.tagName === 'style') {
                 css.addCSSRules(top.children[0].content)
             }
             domTree.pop();
@@ -49,9 +49,8 @@ function emit(token) {
                 content: ''
             }
             top.children.push(currentTextNode)
-        } else {
-            currentTextNode.content += token.content
         }
+        currentTextNode.content += token.content
     }
 }
 
@@ -293,8 +292,8 @@ module.exports.parserHTML = function parserHTML(html) {
     for (let c of html) {
         if (state) {
             state = state(c)
-        } 
+        }
     }
     state = state(EOF)
-    console.log(JSON.stringify[domTree[0]])
+    return domTree[0];
 }
