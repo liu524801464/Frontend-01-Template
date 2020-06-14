@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>tictactoe</title>
+    <style>
+        body {
+            width: 35em;
+            margin: 0 auto;
+            font-family: Tahoma, Verdana, Arial, sans-serif;
+            background: gray;
+        }
+
+        #container {
+            margin: 200px auto;
+        }
+
+        .item {
+            background-color: darkgreen;
+            width: 100px;
+            height: 100px;
+            border: 1px solid white;
+            display: inline-block;
+            vertical-align: bottom;
+            text-align: center;
+            line-height: 100px;
+            color: red;
+            font-size: 35px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='container'>
+
+    </div>
+</body>
+<script>
+    let  border =
+        [
+            [0, 0, 0],
+            [2, 1, 0],
+            [0, 0, 0],
+        ]
+    let color = 1;
+
+    render(border)
+
+
+    function render(arr) {
+        let container = document.getElementById('container')
+        container.innerHTML = "";
+        for (let x = 0; x < 3; x++) {
+            for (let y = 0; y < 3; y++) {
+                let cell = document.createElement('div')
+                cell.classList.add('item')
+                cell.innerHTML = arr[x][y] === 2 ? 'X' : arr[x][y] === 1 ? 'O' : '';
+                container.append(cell);
+                cell.addEventListener('click', () => move(x, y))
+            }
+            container.append(document.createElement('br'))
+        }
+    }
+    function move(x, y) {
+        if (border[x][y] !== 0) {
+            return;
+        }
+        border[x][y] = color;
+        if (check(border, color, x, y) === true) {
+            let msg = color === 2 ? 'X is winner ' : 'O is winner'
+            alert(msg)
+        }
+        color = 3 - color;
+        render(border)
+        if (willWin(border, color)) {
+            let msg = color === 2 ? 'X will winner ' : 'O will winner'
+            console.log(msg);
+        }
+    }
+    function check(pattern, color, x, y) {
+
+        for (let i = 0; i < 3; i++) {
+            {
+                let win = true;
+                for (let j = 0; j < 3; j++) {
+                    if (pattern[i][j] != color) {
+                        win = false;
+                        break;
+                    }
+                }
+                if (win === true) {
+                    return true;
+                }
+            }
+
+            {
+                let win = true;
+                for (let j = 0; j < 3; j++) {
+                    if (pattern[j][i] != color) {
+                        win = false;
+                        break;
+                    }
+                }
+                if (win === true) {
+                    return true;
+                }
+            }
+
+            {
+                let win = true;
+                for (let j = 0; j < 3; j++) {
+                    if (pattern[j][j] != color) {
+                        win = false;
+                        break;
+                    }
+                }
+                if (win === true) {
+                    return true;
+                }
+            }
+
+            {
+                let win = true;
+                for (let j = 0; j < 3; j++) {
+                    if (pattern[j][2 - j] != color) {
+                        win = false;
+                        break;
+                    }
+                }
+                if (win === true) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    function willWin(pattern, color) {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (pattern[i][j] !== 0) {
+                    continue;
+                }
+                pattern[i][j] = color;
+                if (check(pattern, color)) {
+                    pattern[i][j] = 0;
+                    return [j,i];
+                }
+                pattern[i][j] = 0;
+            }
+        }
+        return null;
+    }
+
+
+
+    function Clone(obj)
+    {
+        return JSON.parse(JSON.stringify(obj));
+    }
+
+
+    function bestChoice(pattern,color) {
+
+        let  point = willWin(pattern,color);
+
+        if (point) 
+        {
+            let a = 
+            {
+                point :point,
+                result:1
+            }
+            return a;
+        }
+        let result  = -1;
+        for(let i =0;i<3;i++){
+            for (let j =0;j<3;j++){
+                if(pattern[i][j]!= 0 ){continue;}
+                    let tem = Clone(pattern);
+                    tem[i][j]=color;
+                    let opp = bestChoice(tem,3-color);
+                    if(-opp.result >= result){
+                        point = [j,i];
+                        result = -opp.result;
+                    }
+            }
+        }
+
+        let vTem = {
+            point:point,
+            result:point ? result:0
+        }
+        return vTem
+    }
+</script>
+
+</html>;
